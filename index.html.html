@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N1 動詞帳</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg: #f5f9f7;
+    --card: #ffffff;
+    --border: #dce8e1;
+    --accent: #4a9d7c;
+    --accent-light: #eaf5ef;
+    --accent-dark: #357a5e;
+    --text: #2d3a33;
+    --text-light: #7a8f82;
+    --kana: #2d3a33;
+    --kanji: #3a8c6a;
+    --meaning: #4a5650;
+    --row1: #ffffff;
+    --row2: #f4faf6;
+    --danger: #d9534f;
+    --hidden-bg: #e8ede9;
+  }
+
+  body {
+    font-family: 'Noto Sans SC', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'PingFang SC', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 18px 80px;
+  }
+
+  header {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid var(--accent);
+  }
+  header h1 {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+  header .sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  .test-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    align-items: center;
+  }
+  .test-label {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 500;
+    margin-right: 2px;
+    white-space: nowrap;
+  }
+  .col-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12.5px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    transition: all .15s;
+    user-select: none;
+  }
+  .col-toggle:hover { border-color: var(--accent); }
+  .col-toggle.hidden-col {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .col-toggle .eye { font-size: 14px; line-height: 1; }
+  .reveal-all-btn {
+    margin-left: auto;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text-light);
+    transition: all .15s;
+  }
+  .reveal-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .search-box {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    background: var(--card);
+    outline: none;
+    transition: border-color .2s;
+    font-family: inherit;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box::before {
+    content: "🔍";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: .45;
+  }
+
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tag-btn {
+    padding: 5px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .tag-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .table-wrap {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 13px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-light);
+    background: var(--accent-light);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    letter-spacing: .5px;
+  }
+  thead th:first-child { width: 42px; text-align: center; }
+  thead th:last-child { width: 40px; }
+  tbody td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #eef3f0;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) { background: var(--row2); }
+  tbody tr:hover { background: #e8f4ec; }
+
+  .td-num { text-align: center; color: var(--text-light); font-size: 12px; font-weight: 500; }
+  .td-kana {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 500;
+    font-size: 15.5px;
+    color: var(--kana);
+    letter-spacing: .3px;
+    min-width: 100px;
+  }
+  .td-kanji {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--kanji);
+    min-width: 90px;
+  }
+  .td-kanji.empty { color: #ccc; font-weight: 400; }
+  .td-meaning {
+    color: var(--meaning);
+    font-size: 13.5px;
+    min-width: 140px;
+  }
+
+  .cell-hidden {
+    position: relative;
+    cursor: pointer;
+  }
+  .cell-hidden .cell-content { visibility: hidden; }
+  .cell-hidden::after {
+    content: "点击查看";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--hidden-bg);
+    color: #aab8b0;
+    font-size: 12px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .cell-hidden.revealed .cell-content { visibility: visible; }
+  .cell-hidden.revealed::after { display: none; }
+
+  .del-btn {
+    background: none;
+    border: none;
+    color: #d0d0d0;
+    font-size: 17px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color .15s;
+  }
+  .del-btn:hover { color: var(--danger); }
+
+  .empty-msg {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  .add-section {
+    margin-top: 22px;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+  .add-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .add-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .mode-switch { display: flex; gap: 4px; }
+  .mode-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-light);
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .mode-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .add-form {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-row { display: flex; gap: 8px; }
+  .form-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .submit-btn {
+    padding: 10px 22px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .submit-btn:hover { background: var(--accent-dark); }
+
+  .bulk-hint { font-size: 12px; color: var(--text-light); }
+  .bulk-area {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    min-height: 100px;
+  }
+  .bulk-area:focus { border-color: var(--accent); }
+
+  .reset-btn {
+    margin-top: 18px;
+    background: none;
+    border: none;
+    color: #c0c0c0;
+    font-size: 12px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    font-family: inherit;
+    transition: color .15s;
+  }
+  .reset-btn:hover { color: var(--danger); }
+
+  .toast {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 9px 28px;
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    opacity: 0;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 520px) {
+    .container { padding: 18px 10px 60px; }
+    .td-kana, .td-kanji { font-size: 14px; }
+    .td-meaning { font-size: 12.5px; }
+    thead th { padding: 10px 8px; font-size: 11px; }
+    tbody td { padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="toast" id="toast"></div>
+
+  <header>
+    <h1>N1 動詞帳</h1>
+    <p class="sub" id="counter"></p>
+  </header>
+
+  <div class="test-controls">
+    <span class="test-label">自测模式：</span>
+    <button class="col-toggle" id="toggleKana" data-col="kana">
+      <span class="eye">👁</span> 読み方
+    </button>
+    <button class="col-toggle" id="toggleKanji" data-col="kanji">
+      <span class="eye">👁</span> 漢字
+    </button>
+    <button class="col-toggle" id="toggleMeaning" data-col="meaning">
+      <span class="eye">👁</span> 释义
+    </button>
+    <button class="reveal-all-btn" id="revealAllBtn">全部显示</button>
+  </div>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索假名、汉字或释义…">
+  </div>
+  <div class="tags" id="tagContainer"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>読み方</th>
+          <th>漢字</th>
+          <th>中文释义</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty-msg hidden" id="emptyMsg">没有找到匹配的单词</div>
+  </div>
+
+  <div class="add-section">
+    <div class="add-header">
+      <button class="add-toggle" id="addToggle">＋ 添加新单词</button>
+      <div class="mode-switch hidden" id="modeSwitch">
+        <button class="mode-btn active" id="modeSingle">逐条</button>
+        <button class="mode-btn" id="modeBulk">批量</button>
+      </div>
+    </div>
+    <div class="add-form hidden" id="singleForm">
+      <div class="form-row">
+        <input class="form-input" id="newKana" placeholder="假名 *">
+        <input class="form-input" id="newKanji" placeholder="汉字（可空）">
+      </div>
+      <input class="form-input" id="newMeaning" placeholder="中文释义" style="width:100%">
+      <div class="form-row">
+        <select class="form-input" id="newTag">
+          <option value="動詞">動詞</option>
+          <option value="複合動詞">複合動詞</option>
+        </select>
+        <button class="submit-btn" id="addOneBtn">添加</button>
+      </div>
+    </div>
+    <div class="add-form hidden" id="bulkForm">
+      <p class="bulk-hint">每行一个，格式：假名，汉字，释义（用逗号或 Tab 分隔）</p>
+      <textarea class="bulk-area" id="bulkText" placeholder="おしとおす，押し通す，强行贯彻&#10;こなす，，熟练处理"></textarea>
+      <div class="form-row">
+        <select class="form-input" id="bulkTag">
+          <option value="動詞">動詞</option>
+          <option value="複合動詞">複合動詞</option>
+        </select>
+        <button class="submit-btn" id="addBulkBtn">批量添加</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="reset-btn" id="resetBtn">重置为初始数据</button>
+</div>
+
+<script>
+/*
+  释义原则：
+  - 分号隔开 = 真正不同的义项
+  - 同义只保留最精准的一个说法
+  - 括号内 = N1常考的典型搭配对象
+*/
+var INITIAL = [
+  // ═══ 複合動詞 ═══
+  ["おしとおす","押し通す","强行贯彻（主张）；硬闯通过","複合動詞"],
+  ["もてあます","持て余す","无法应对（棘手的事/过剩的精力）","複合動詞"],
+  ["おしあげる","押し上げる","推高（地位/数值/排名）","複合動詞"],
+  ["おしだす","押し出す","推到前台；使引人注目","複合動詞"],
+  ["おしつける","押し付ける","强加于人（责任/意见/东西）","複合動詞"],
+  ["ぬきんでる","抜きん出る","出类拔萃","複合動詞"],
+  ["うちとける","打ち解ける","变得亲近融洽","複合動詞"],
+  ["うちやぶる","打ち破る","打破（记录/僵局/常识）","複合動詞"],
+  ["ふりこむ","振り込む","汇款转账","複合動詞"],
+  ["ぬけだす","抜け出す","偷偷溜走；摆脱（困境/低迷）","複合動詞"],
+  ["ゆびさす","指差す","用手指向","複合動詞"],
+  ["うちあける","打ち明ける","坦白吐露（秘密/心事）","複合動詞"],
+  ["うちこむ","打ち込む","全身心投入；输入（数据）","複合動詞"],
+  ["おりかえす","折り返す","原路返回；回拨（电话）","複合動詞"],
+  ["なげだす","投げ出す","扔出去；中途放弃","複合動詞"],
+  ["おしきる","押し切る","不顾反对强行推进","複合動詞"],
+  ["おしこむ","押し込む","硬塞进去","複合動詞"],
+  ["うちきる","打ち切る","中止（连载/谈判/援助）","複合動詞"],
+  ["ひっかく","引っかく","用爪子抓挠","複合動詞"],
+  ["ひきつぐ","引き継ぐ","接手（工作/职务）；传承","複合動詞"],
+  ["ひきとる","引き取る","领回；收养；（委婉）咽气","複合動詞"],
+  ["かたちづくる","形作る","构成某种形态或结构","複合動詞"],
+  ["はりあう","張り合う","互相较劲争胜","複合動詞"],
+  ["いきごむ","意気込む","干劲十足","複合動詞"],
+  ["てがける","手掛ける","亲自经手（项目/作品）","複合動詞"],
+  ["さしつかえる","差し支える","有妨碍/有不便","複合動詞"],
+  ["ひきずる","引きずる","拖着走；拖延不了结；走不出（过去）","複合動詞"],
+  ["さしかかる","差し掛かる","行至（某处）；临近（某时刻）","複合動詞"],
+  ["うめたてる","埋め立てる","填海造地","複合動詞"],
+  ["よりかかる","寄り掛かる","身体靠在…上；依赖","複合動詞"],
+  ["うめこむ","埋め込む","嵌入（芯片/代码等）","複合動詞"],
+  ["くちずさむ","口ずさむ","不经意地哼唱","複合動詞"],
+  ["とりのぞく","取り除く","去除（障碍/不安/污渍）","複合動詞"],
+  ["とりまく","取り巻く","围绕（某人/某事的环境）","複合動詞"],
+  ["うけつぐ","受け継ぐ","继承（传统/遗志/财产）","複合動詞"],
+  ["とりたてる","取り立てる","催收（债务）；特意提拔；刻意强调","複合動詞"],
+  ["とりよせる","取り寄せる","从远处订购取来","複合動詞"],
+  ["わりあてる","割り当てる","分配（任务/资源/名额）","複合動詞"],
+  ["とりつぐ","取り次ぐ","转告传达；转接（电话/来客）","複合動詞"],
+  ["うけとめる","受け止める","接住；认真对待（意见/事实）","複合動詞"],
+  ["とりしらべる","取り調べる","审问（嫌疑人）","複合動詞"],
+  ["とりまぜる","取り混ぜる","各种掺杂混在一起","複合動詞"],
+  ["わりこむ","割り込む","插队；插嘴打断","複合動詞"],
+  ["かもしだす","かもし出す","营造出（氛围/气氛）","複合動詞"],
+  ["もぎとる","もぎ取る","使劲摘下；强行夺取","複合動詞"],
+  ["のりだす","乗り出す","探身向前；着手开始（新事业）","複合動詞"],
+  ["かきみだす","かき乱す","搅乱（秩序/心绪）","複合動詞"],
+  ["つきそう","付き添う","陪伴在旁照顾","複合動詞"],
+  ["でまわる","出回る","（商品/消息）大量流通","複合動詞"],
+  ["きりひらく","切り開く","开辟（道路/未来/新领域）","複合動詞"],
+  ["きりぬける","切り抜ける","渡过（危机/难关）","複合動詞"],
+  ["つきまとう","付き纏う","纠缠不放","複合動詞"],
+  ["そなえつける","備え付ける","安装配备（设施/设备）","複合動詞"],
+  ["でくわす","出くわす","偶然碰见","複合動詞"],
+  ["つかいこなす","使いこなす","运用自如","複合動詞"],
+
+  // ═══ 動詞 ═══
+  ["ねじれる","捩れる","扭曲变形；（关系/局势）拧巴对立","動詞"],
+  ["くじく","挫く","扭伤（脚踝）；挫败（锐气/信心）","動詞"],
+  ["になう","担う","担负（责任/角色）","動詞"],
+  ["さばく","捌く","麻利处理（鱼/事务/大量订单）","動詞"],
+  ["こばむ","拒む","拒绝","動詞"],
+  ["えぐる","抉る","挖出；深刻揭露（真相/内心）","動詞"],
+  ["とらわれる","捕らわれる","被捕；拘泥于（偏见/成见）","動詞"],
+  ["すえる","据える","安放固定；设定（目标/据点）","動詞"],
+  ["くじける","挫ける","气馁丧气","動詞"],
+  ["いどむ","挑む","挑战；挑起（争端）","動詞"],
+  ["はかどる","捗る","（工作/学习）进展顺利","動詞"],
+  ["ささげる","捧げる","奉献（生命/青春/一生）","動詞"],
+  ["いたむ","悼む","悼念","動詞"],
+  ["せかす","急かす","催促","動詞"],
+  ["しのぶ","忍ぶ","忍耐克制；隐藏行踪","動詞"],
+  ["はじる","恥じる","感到羞耻","動詞"],
+  ["よわる","弱る","衰弱；（被难住而）犯愁","動詞"],
+  ["つつしむ","慎む","言行谨慎克制","動詞"],
+  ["せかせる","急かせる","催促加快","動詞"],
+  ["ならす","慣らす","使习惯适应；驯服","動詞"],
+  ["うれえる","憂える","为（社会/前途等大事）忧虑","動詞"],
+  ["さまよう","彷徨う","漫无目的地徘徊","動詞"],
+  ["わずらう","患う","罹患（疾病）","動詞"],
+  ["いましめる","戒める","告诫使其警觉","動詞"],
+  ["ねだる","強請る","缠着央求（多指撒娇要东西）","動詞"],
+  ["さとる","悟る","领悟觉悟","動詞"],
+  ["しいる","強いる","强迫逼迫","動詞"],
+  ["したう","慕う","仰慕；思慕（离别之人）","動詞"],
+  ["おこたる","怠る","懈怠疏忽","動詞"],
+  ["はずむ","弾む","弹跳；（心情/谈话）高涨活跃；出手大方","動詞"],
+  ["とぼける","惚ける","装傻假装不知","動詞"],
+  ["たるむ","弛む","松弛下垂；精神松懈","動詞"],
+  ["こりる","懲りる","吃过苦头不敢再犯","動詞"],
+  ["こころざす","志す","立志以…为目标","動詞"],
+  ["おびえる","怯える","因恐惧而战栗","動詞"],
+  ["むくう","報う","报答（恩情）","動詞"],
+  ["とうとぶ","尊ぶ","尊崇看重","動詞"],
+  ["かがむ","屈む","弯腰蹲下","動詞"],
+  ["ほうじる","報じる","报道（新闻）","動詞"],
+  ["あてる","宛てる","写给寄给（某人）","動詞"],
+  ["みちびく","導く","引导带领（走向正确方向/结论）","動詞"],
+  ["うめる","埋める","埋入；填补（空缺/差距）","動詞"],
+  ["なめる","嘗める","舔；轻视小看","動詞"],
+  ["ねたむ","妬む","嫉妒","動詞"],
+  ["さだめる","定める","制定（规则）；决定","動詞"],
+  ["おびる","帯びる","带有（色彩/性质）；肩负（任务）","動詞"],
+  ["ゆだねる","委ねる","全权委托交付","動詞"],
+  ["はらむ","孕む","怀孕；蕴含（危险/矛盾）","動詞"],
+  ["かこう","囲う","围起来（保护/圈养）","動詞"],
+  ["かがめる","屈める","弯曲（腰/膝盖）","動詞"],
+  ["さだまる","定まる","确定下来不再变动","動詞"],
+  ["めぐらす","巡らす","环绕布置；转动（思绪/视线）","動詞"],
+  ["たてまつる","奉る","恭敬奉上（敬语）","動詞"],
+  ["むくいる","報いる","回报（恩或仇）","動詞"],
+  ["かさむ","嵩む","（费用/数量）越积越多","動詞"],
+  ["とむ","富む","富有；富于（经验/变化）","動詞"],
+  ["かばう","庇う","庇护使不受伤害","動詞"],
+  ["かさばる","嵩張る","体积大占空间","動詞"],
+  ["すたれる","廃れる","过时不再流行","動詞"],
+  ["つとまる","務まる","能胜任（某职务/角色）","動詞"],
+  ["やわらげる","和らげる","缓和（疼痛/紧张/气氛）","動詞"],
+  ["めす","召す","（尊敬语）穿；乘；吃；召唤","動詞"],
+  ["およぶ","及ぶ","达到；涉及；比得上","動詞"],
+  ["はげむ","励む","努力致力于","動詞"],
+  ["いとなむ","営む","经营（生意/生活）；举办（仪式）","動詞"],
+  ["あやぶむ","危ぶむ","对前景感到担忧","動詞"],
+  ["あわす","合わす","使对齐合在一起","動詞"],
+  ["そらす","反らす","使翘起；转移（视线/话题）","動詞"],
+  ["かれる","嗄れる","（嗓音）沙哑","動詞"],
+  ["たたく","叩く","敲打；抨击批评","動詞"],
+  ["となえる","唱える","念诵（经文）；提倡主张","動詞"],
+  ["つのる","募る","募集征集；（感情）越发强烈","動詞"],
+  ["ばける","化ける","变化伪装成另一种样子","動詞"],
+  ["まさる","勝る","胜过优于","動詞"],
+  ["とがめる","咎める","追究责备","動詞"],
+  ["そる","反る","翘曲；身体后仰","動詞"],
+  ["いたわる","労わる","体贴照顾","動詞"],
+  ["こなす","","熟练处理（大量工作）；消化","動詞"],
+  ["もつれる","","纠缠（线/关系/舌头打结）","動詞"],
+  ["ごまかす","","蒙混过关；隐瞒搪塞","動詞"],
+  ["とろける","","融化；（心）陶醉","動詞"],
+  ["くすぐる","","挠痒痒；撩拨（好奇心/虚荣心）","動詞"],
+  ["もがく","","拼命挣扎","動詞"],
+  ["したてる","仕立てる","裁制缝纫；培养打造成","動詞"],
+  ["しのぶ","偲ぶ","缅怀追忆（故人/往事）","動詞"],
+  ["めんじる","免じる","看在…份上免去","動詞"],
+  ["しくむ","仕組む","策划设计（机关/圈套/计划）","動詞"],
+  ["そそる","","激起（食欲/兴趣/好奇心）","動詞"],
+  ["まるめる","丸める","揉成团弄圆；笼络哄骗","動詞"],
+  ["まじわる","交わる","交叉；交往来往","動詞"],
+  ["あおぐ","仰ぐ","仰望；请求（指示/判断）","動詞"],
+  ["ふせる","伏せる","趴下；隐瞒不公开","動詞"],
+  ["おかす","冒す","不顾（危险/禁忌）；侵蚀","動詞"],
+  ["あまる","余る","多余剩下；超出（能力范围）","動詞"],
+  ["ばらす","","拆散；泄露（秘密）","動詞"],
+  ["ばてる","","精疲力竭","動詞"],
+  ["みだす","乱す","打乱（秩序/节奏/队形）","動詞"],
+  ["しきる","仕切る","统管主持；分隔划分","動詞"],
+  ["まかす","任す","放手交给对方处理","動詞"],
+  ["ぼやける","","（轮廓/焦点/界限）变模糊","動詞"],
+  ["ばれる","","败露被发现（秘密/谎言）","動詞"],
+  ["はげる","剥げる","（漆/色）剥落脱落","動詞"],
+  ["はぐ","剥ぐ","剥掉扒下（皮/衣/被子）","動詞"],
+  ["あざわらう","あざ笑う","嘲笑讥讽","動詞"],
+  ["かわす","交わす","互相交换（目光/言语/杯酒）","動詞"],
+  ["しくじる","","搞砸办砸","動詞"],
+  ["ひやかす","冷やかす","嘲弄取笑；只看不买","動詞"],
+  ["しのぐ","凌ぐ","超越胜过；熬过（困境/严寒）","動詞"],
+  ["にかよう","似通う","彼此相似","動詞"],
+  ["こらす","凝らす","凝聚集中（目光/心思）","動詞"],
+  ["ぼやく","","发牢骚抱怨","動詞"],
+];
+
+var STORAGE_KEY = "n1_verb_list_v3";
+
+var verbs = [];
+var currentFilter = "all";
+var currentSearch = "";
+var addOpen = false;
+var bulkMode = false;
+var hiddenCols = { kana: false, kanji: false, meaning: false };
+
+function loadVerbs() {
+  try {
+    var saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { verbs = JSON.parse(saved); return; }
+  } catch(e) {}
+  resetToInitial();
+}
+
+function resetToInitial() {
+  verbs = INITIAL.map(function(v, i) {
+    return { id: "i" + i, kana: v[0], kanji: v[1], meaning: v[2], tag: v[3] };
+  });
+  saveVerbs();
+}
+
+function saveVerbs() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(verbs)); } catch(e) {}
+}
+
+function getTags() {
+  var s = {};
+  verbs.forEach(function(v) { s[v.tag] = true; });
+  return Object.keys(s);
+}
+
+function getFiltered() {
+  return verbs.filter(function(v) {
+    if (currentFilter !== "all" && v.tag !== currentFilter) return false;
+    if (currentSearch) {
+      var s = currentSearch.toLowerCase();
+      return v.kana.indexOf(s) >= 0 || v.kanji.indexOf(s) >= 0 || v.meaning.indexOf(s) >= 0;
+    }
+    return true;
+  });
+}
+
+function render() {
+  var filtered = getFiltered();
+  var tags = getTags();
+
+  document.getElementById("counter").textContent =
+    "\u5171 " + verbs.length + " \u8bcd \u00b7 \u7b5b\u9009\u540e " + filtered.length + " \u8bcd";
+
+  var tc = document.getElementById("tagContainer");
+  tc.innerHTML = "";
+  var allBtn = document.createElement("button");
+  allBtn.className = "tag-btn" + (currentFilter === "all" ? " active" : "");
+  allBtn.textContent = "\u5168\u90e8";
+  allBtn.onclick = function() { currentFilter = "all"; render(); };
+  tc.appendChild(allBtn);
+  tags.forEach(function(t) {
+    var btn = document.createElement("button");
+    btn.className = "tag-btn" + (currentFilter === t ? " active" : "");
+    btn.textContent = t + " (" + verbs.filter(function(v){return v.tag===t;}).length + ")";
+    btn.onclick = function() { currentFilter = t; render(); };
+    tc.appendChild(btn);
+  });
+
+  var tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  filtered.forEach(function(v, i) {
+    var tr = document.createElement("tr");
+    var kanaCls = hiddenCols.kana ? "cell-hidden" : "";
+    var kanjiCls = hiddenCols.kanji ? "cell-hidden" : "";
+    var meaningCls = hiddenCols.meaning ? "cell-hidden" : "";
+
+    tr.innerHTML =
+      '<td class="td-num">' + (i + 1) + '</td>' +
+      '<td class="td-kana ' + kanaCls + '"><span class="cell-content">' + esc(v.kana) + '</span></td>' +
+      '<td class="td-kanji ' + (v.kanji ? '' : 'empty') + ' ' + kanjiCls + '"><span class="cell-content">' + (v.kanji ? esc(v.kanji) : '\u2014') + '</span></td>' +
+      '<td class="td-meaning ' + meaningCls + '"><span class="cell-content">' + esc(v.meaning) + '</span></td>' +
+      '<td><button class="del-btn" title="\u5220\u9664">\u00d7</button></td>';
+
+    var cells = tr.querySelectorAll(".cell-hidden");
+    for (var c = 0; c < cells.length; c++) {
+      cells[c].addEventListener("click", function() {
+        this.classList.toggle("revealed");
+      });
+    }
+
+    tr.querySelector(".del-btn").onclick = (function(vid) {
+      return function() {
+        verbs = verbs.filter(function(x){return x.id !== vid;});
+        saveVerbs();
+        showToast("\u5df2\u5220\u9664");
+        render();
+      };
+    })(v.id);
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("emptyMsg").classList.toggle("hidden", filtered.length > 0);
+
+  ["kana","kanji","meaning"].forEach(function(col) {
+    var btn = document.getElementById("toggle" + col.charAt(0).toUpperCase() + col.slice(1));
+    if (hiddenCols[col]) {
+      btn.classList.add("hidden-col");
+      btn.querySelector(".eye").textContent = "\ud83d\ude48";
+    } else {
+      btn.classList.remove("hidden-col");
+      btn.querySelector(".eye").textContent = "\ud83d\udc41";
+    }
+  });
+}
+
+function esc(s) {
+  var d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2000);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  loadVerbs();
+  render();
+
+  document.getElementById("searchInput").addEventListener("input", function(e) {
+    currentSearch = e.target.value;
+    render();
+  });
+
+  ["Kana","Kanji","Meaning"].forEach(function(col) {
+    document.getElementById("toggle" + col).addEventListener("click", function() {
+      var key = col.toLowerCase();
+      hiddenCols[key] = !hiddenCols[key];
+      render();
+    });
+  });
+
+  document.getElementById("revealAllBtn").addEventListener("click", function() {
+    hiddenCols = { kana: false, kanji: false, meaning: false };
+    render();
+    showToast("\u5df2\u5168\u90e8\u663e\u793a");
+  });
+
+  document.getElementById("addToggle").addEventListener("click", function() {
+    addOpen = !addOpen;
+    document.getElementById("addToggle").textContent = addOpen ? "\u25be \u6536\u8d77" : "\uff0b \u6dfb\u52a0\u65b0\u5355\u8bcd";
+    document.getElementById("modeSwitch").classList.toggle("hidden", !addOpen);
+    updateFormVisibility();
+  });
+
+  document.getElementById("modeSingle").addEventListener("click", function() {
+    bulkMode = false;
+    document.getElementById("modeSingle").classList.add("active");
+    document.getElementById("modeBulk").classList.remove("active");
+    updateFormVisibility();
+  });
+  document.getElementById("modeBulk").addEventListener("click", function() {
+    bulkMode = true;
+    document.getElementById("modeBulk").classList.add("active");
+    document.getElementById("modeSingle").classList.remove("active");
+    updateFormVisibility();
+  });
+
+  document.getElementById("addOneBtn").addEventListener("click", function() {
+    var kana = document.getElementById("newKana").value.trim();
+    if (!kana) return;
+    verbs.push({
+      id: "u" + Date.now(),
+      kana: kana,
+      kanji: document.getElementById("newKanji").value.trim(),
+      meaning: document.getElementById("newMeaning").value.trim(),
+      tag: document.getElementById("newTag").value,
+    });
+    saveVerbs();
+    document.getElementById("newKana").value = "";
+    document.getElementById("newKanji").value = "";
+    document.getElementById("newMeaning").value = "";
+    showToast("\u5df2\u6dfb\u52a0\uff1a" + kana);
+    render();
+  });
+
+  document.getElementById("addBulkBtn").addEventListener("click", function() {
+    var text = document.getElementById("bulkText").value.trim();
+    if (!text) return;
+    var tag = document.getElementById("bulkTag").value;
+    var lines = text.split("\n").filter(function(l){return l.trim();});
+    var count = 0;
+    lines.forEach(function(line) {
+      var parts = line.split(/[,\uff0c\t]/).map(function(s){return s.trim();});
+      if (parts[0]) {
+        verbs.push({
+          id: "u" + Date.now() + Math.random(),
+          kana: parts[0],
+          kanji: parts[1] || "",
+          meaning: parts[2] || "",
+          tag: tag,
+        });
+        count++;
+      }
+    });
+    saveVerbs();
+    document.getElementById("bulkText").value = "";
+    showToast("\u5df2\u6dfb\u52a0 " + count + " \u4e2a\u5355\u8bcd");
+    render();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function() {
+    if (!confirm("\u786e\u5b9a\u8981\u91cd\u7f6e\u4e3a\u521d\u59cb\u6570\u636e\u5417\uff1f\u6240\u6709\u81ea\u5b9a\u4e49\u6dfb\u52a0\u7684\u5355\u8bcd\u5c06\u88ab\u5220\u9664\u3002")) return;
+    resetToInitial();
+    showToast("\u5df2\u91cd\u7f6e");
+    render();
+  });
+});
+
+function updateFormVisibility() {
+  document.getElementById("singleForm").classList.toggle("hidden", !addOpen || bulkMode);
+  document.getElementById("bulkForm").classList.toggle("hidden", !addOpen || !bulkMode);
+}
+</script>
+</body>
+</html>

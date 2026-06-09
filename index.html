@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N1 動詞帳</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg: #f5f9f7;
+    --card: #ffffff;
+    --border: #dce8e1;
+    --accent: #4a9d7c;
+    --accent-light: #eaf5ef;
+    --accent-dark: #357a5e;
+    --text: #2d3a33;
+    --text-light: #7a8f82;
+    --kana: #2d3a33;
+    --kanji: #3a8c6a;
+    --meaning: #4a5650;
+    --row1: #ffffff;
+    --row2: #f4faf6;
+    --danger: #d9534f;
+  }
+
+  body {
+    font-family: 'Noto Sans SC', 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'PingFang SC', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 18px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid var(--accent);
+  }
+  header h1 {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+  header .sub {
+    font-size: 13px;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+
+  /* Search */
+  .search-box {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 11px 14px 11px 38px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    background: var(--card);
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box::before {
+    content: "🔍";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: .45;
+  }
+
+  /* Tags */
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tag-btn {
+    padding: 5px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .tag-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Table */
+  .table-wrap {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 13px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-light);
+    background: var(--accent-light);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    letter-spacing: .5px;
+  }
+  thead th:first-child { width: 42px; text-align: center; }
+  thead th:last-child { width: 40px; }
+  tbody td {
+    padding: 12px 12px;
+    border-bottom: 1px solid #eef3f0;
+    vertical-align: middle;
+  }
+  tbody tr:nth-child(even) { background: var(--row2); }
+  tbody tr:hover { background: #e8f4ec; }
+
+  .td-num { text-align: center; color: var(--text-light); font-size: 12px; font-weight: 500; }
+  .td-kana {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 500;
+    font-size: 15.5px;
+    color: var(--kana);
+    letter-spacing: .3px;
+    min-width: 100px;
+  }
+  .td-kanji {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 600;
+    font-size: 15.5px;
+    color: var(--kanji);
+    min-width: 90px;
+  }
+  .td-kanji.empty { color: #ccc; font-weight: 400; }
+  .td-meaning {
+    color: var(--meaning);
+    font-size: 13.5px;
+    min-width: 140px;
+  }
+  .del-btn {
+    background: none;
+    border: none;
+    color: #d0d0d0;
+    font-size: 17px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color .15s;
+  }
+  .del-btn:hover { color: var(--danger); }
+
+  .empty-msg {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-light);
+    font-size: 14px;
+  }
+
+  /* Add Section */
+  .add-section {
+    margin-top: 22px;
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+  .add-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .add-toggle {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .mode-switch { display: flex; gap: 4px; }
+  .mode-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-light);
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .mode-btn.active {
+    background: var(--accent-light);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .add-form {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .form-row { display: flex; gap: 8px; }
+  .form-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color .2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .submit-btn {
+    padding: 10px 22px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .submit-btn:hover { background: var(--accent-dark); }
+
+  .bulk-hint { font-size: 12px; color: var(--text-light); }
+  .bulk-area {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    min-height: 100px;
+  }
+  .bulk-area:focus { border-color: var(--accent); }
+
+  .reset-btn {
+    margin-top: 18px;
+    background: none;
+    border: none;
+    color: #c0c0c0;
+    font-size: 12px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    width: 100%;
+    padding: 10px;
+    font-family: inherit;
+    transition: color .15s;
+  }
+  .reset-btn:hover { color: var(--danger); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 9px 28px;
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12);
+    opacity: 0;
+    transition: opacity .25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  .hidden { display: none !important; }
+
+  /* Mobile tweaks */
+  @media (max-width: 520px) {
+    .container { padding: 18px 10px 60px; }
+    .td-kana, .td-kanji { font-size: 14px; }
+    .td-meaning { font-size: 12.5px; }
+    thead th { padding: 10px 8px; font-size: 11px; }
+    tbody td { padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="toast" id="toast"></div>
+
+  <header>
+    <h1>N1 動詞帳</h1>
+    <p class="sub" id="counter"></p>
+  </header>
+
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="搜索假名、汉字或释义…">
+  </div>
+  <div class="tags" id="tagContainer"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>読み方</th>
+          <th>漢字</th>
+          <th>中文释义</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty-msg hidden" id="emptyMsg">没有找到匹配的单词</div>
+  </div>
+
+  <div class="add-section">
+    <div class="add-header">
+      <button class="add-toggle" id="addToggle">＋ 添加新单词</button>
+      <div class="mode-switch hidden" id="modeSwitch">
+        <button class="mode-btn active" id="modeSingle">逐条</button>
+        <button class="mode-btn" id="modeBulk">批量</button>
+      </div>
+    </div>
+
+    <div class="add-form hidden" id="singleForm">
+      <div class="form-row">
+        <input class="form-input" id="newKana" placeholder="假名 *">
+        <input class="form-input" id="newKanji" placeholder="汉字（可空）">
+      </div>
+      <input class="form-input" id="newMeaning" placeholder="中文释义" style="width:100%">
+      <div class="form-row">
+        <input class="form-input" id="newTag" placeholder="分组标签" value="学习">
+        <button class="submit-btn" id="addOneBtn">添加</button>
+      </div>
+    </div>
+
+    <div class="add-form hidden" id="bulkForm">
+      <p class="bulk-hint">每行一个，格式：假名，汉字，释义（用逗号或 Tab 分隔）</p>
+      <textarea class="bulk-area" id="bulkText" placeholder="おしとおす，押し通す，坚持到底&#10;こなす，，完成处理"></textarea>
+      <div class="form-row">
+        <input class="form-input" id="bulkTag" placeholder="分组标签" value="学习">
+        <button class="submit-btn" id="addBulkBtn">批量添加</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="reset-btn" id="resetBtn">重置为初始数据</button>
+</div>
+
+<script>
+// ─── DATA ───
+const INITIAL = [
+  ["おしとおす","押し通す","坚持到底，贯彻始终","学习"],
+  ["もてあます","持て余す","难以处理，无法应对","学习"],
+  ["ねじれる","捩れる","扭曲","学习"],
+  ["くじく","挫く","挫伤，挫败","学习"],
+  ["になう","担う","承担，担负","学习"],
+  ["おしあげる","押し上げる","抬高，提升，提高","学习"],
+  ["さばく","捌く","处理，拆开，妥善处理","学习"],
+  ["おしだす","押し出す","推出，推进","学习"],
+  ["おしつける","押し付ける","强加，强迫，硬塞","学习"],
+  ["ぬきんでる","抜きん出る","出类拔萃，突出","学习"],
+  ["こばむ","拒む","拒绝，拒抗","学习"],
+  ["うちとける","打ち解ける","融洽，打成一片","学习"],
+  ["えぐる","抉る","挖掘，挖出","学习"],
+  ["とらわれる","捕らわれる","被捕，被困，陷入","学习"],
+  ["うちやぶる","打ち破る","打破，冲破","学习"],
+  ["ふりこむ","振り込む","汇款，转账","学习"],
+  ["すえる","据える","放置，安放，设立","学习"],
+  ["ぬけだす","抜け出す","摆脱，逃脱，离开","学习"],
+  ["ゆびさす","指差す","用手指指，指示","学习"],
+  ["うちあける","打ち明ける","坦白，毫不隐瞒地说","学习"],
+  ["うちこむ","打ち込む","投进，专心致志，键入","学习"],
+  ["おりかえす","折り返す","折回，回电，回信","学习"],
+  ["なげだす","投げ出す","抛出，放弃","学习"],
+  ["おしきる","押し切る","坚持到底，不顾反对","学习"],
+  ["おしこむ","押し込む","塞入，塞进，压入","学习"],
+  ["くじける","挫ける","气馁，沮丧","学习"],
+  ["いどむ","挑む","挑战，挑起","学习"],
+  ["はかどる","捗る","进展，顺利进行","学习"],
+  ["うちきる","打ち切る","中止，结束","学习"],
+  ["ささげる","捧げる","献上，奉献","学习"],
+  ["ひっかく","引っかく","抓，抓伤，抓挠","学习"],
+  ["ひきつぐ","引き継ぐ","继承，接替，传递","学习"],
+  ["いたむ","悼む","哀悼，悼念","学习"],
+  ["せかす","急かす","催促，催赶","学习"],
+  ["ひきとる","引き取る","领取，收养，撤回","学习"],
+  ["かたちづくる","形作る","构成，塑造，形成","学习"],
+  ["はりあう","張り合う","竞争，争斗","学习"],
+  ["しのぶ","忍ぶ","忍耐，隐藏","学习"],
+  ["はじる","恥じる","羞愧，感到羞耻","学习"],
+  ["よわる","弱る","变弱，衰弱，困窘","学习"],
+  ["つつしむ","慎む","谨慎，节制，节约","学习"],
+  ["せかせる","急かせる","催促，赶紧","学习"],
+  ["いきごむ","意気込む","干劲十足，热情洋溢","学习"],
+  ["ならす","慣らす","驯服，使习惯","学习"],
+  ["てがける","手掛ける","经手，着手处理，操办","学习"],
+  ["うれえる","憂える","担心，忧虑","学习"],
+  ["さまよう","彷徨う","彷徨，徘徊","学习"],
+  ["わずらう","患う","患病，罹患","学习"],
+  ["いましめる","戒める","警戒，阻止，规劝","学习"],
+  ["ねだる","強請る","勒索，乞求，强行恳求","学习"],
+  ["さとる","悟る","领悟，觉悟，醒悟","学习"],
+  ["しいる","強いる","强迫，逼迫","学习"],
+  ["したう","慕う","仰慕，怀念","学习"],
+  ["おこたる","怠る","懈怠，疏忽","学习"],
+  ["はずむ","弾む","弹起，有活力，兴奋","学习"],
+  ["とぼける","惚ける","装傻，假装不知道","学习"],
+  ["たるむ","弛む","松弛，放松，懈怠","学习"],
+  ["こりる","懲りる","汲取教训，吸取教训","学习"],
+  ["こころざす","志す","立志，以…为目标","学习"],
+  ["おびえる","怯える","害怕，畏惧","学习"],
+  ["むくう","報う","报答，回报","学习"],
+  ["よりかかる","寄り掛かる","依靠，倚靠","学习"],
+  ["とうとぶ","尊ぶ","尊重，崇敬","学习"],
+  ["かがむ","屈む","蹲下，弯腰","学习"],
+  ["ほうじる","報じる","报道，报告","学习"],
+  ["あてる","宛てる","发给，寄给，致","学习"],
+  ["うめこむ","埋め込む","埋入，嵌入，插入","学习"],
+  ["みちびく","導く","引导，指导，领导","学习"],
+  ["うめる","埋める","埋，掩埋，填补，填塞","学习"],
+  ["なめる","嘗める","舔，品尝，轻视","学习"],
+  ["さしつかえる","差し支える","妨碍，阻碍","学习"],
+  ["ねたむ","妬む","嫉妒","学习"],
+  ["ひきずる","引きずる","拖，拉，拖延，拖长","学习"],
+  ["さしかかる","差し掛かる","靠近，到达，临近","学习"],
+  ["さだめる","定める","决定，规定，确定","学习"],
+  ["おびる","帯びる","带有，承担，配戴","学习"],
+  ["うめたてる","埋め立てる","填埋，堆填","学习"],
+  ["ゆだねる","委ねる","委托，托付，委身","学习"],
+  ["はらむ","孕む","怀孕，孕育，蕴含","学习"],
+  ["かこう","囲う","围住，保护，围着","学习"],
+  ["かがめる","屈める","弯曲，弯下","学习"],
+  ["さだまる","定まる","决定，确定，稳定","学习"],
+  ["めぐらす","巡らす","转动，环绕，思考","学习"],
+  ["たてまつる","奉る","奉献，奉上，恭维","学习"],
+  ["むくいる","報いる","报答，回报","学习"],
+  ["かさむ","嵩む","增多，增加","学习"],
+  ["とむ","富む","富有，丰富","学习"],
+  ["かばう","庇う","庇护，袒护，包庇","学习"],
+  ["かさばる","嵩張る","体积大，占地方","学习"],
+  ["すたれる","廃れる","衰落，过时","学习"],
+  ["つとまる","務まる","胜任，能够承担","学习"],
+  ["くちずさむ","口ずさむ","哼唱，吟唱","学习"],
+  ["やわらげる","和らげる","缓和，减轻","学习"],
+  ["めす","召す","召唤，叫来，请吃，邀请","学习"],
+  ["およぶ","及ぶ","达到，涉及，延伸到","学习"],
+  ["はげむ","励む","努力，勤奋","学习"],
+  ["とりのぞく","取り除く","去除，删除，消除","学习"],
+  ["とりまく","取り巻く","围绕，包围","学习"],
+  ["うけつぐ","受け継ぐ","继承，传承","学习"],
+  ["とりたてる","取り立てる","催缴，征收，强调","学习"],
+  ["とりよせる","取り寄せる","订购，索取，定货","学习"],
+  ["いとなむ","営む","经营，从事，进行","学习"],
+  ["あやぶむ","危ぶむ","担心，怀疑","学习"],
+  ["わりあてる","割り当てる","分配，分派，指派","学习"],
+  ["あわす","合わす","使适合，混合，合并","学习"],
+  ["とりつぐ","取り次ぐ","传达，转交，代办","学习"],
+  ["うけとめる","受け止める","接住，理解，承担","学习"],
+  ["とりしらべる","取り調べる","调查，审问","学习"],
+  ["とりまぜる","取り混ぜる","混合，搀合","学习"],
+  ["そらす","反らす","转移，弯曲，偏转","学习"],
+  ["かれる","嗄れる","嘶哑","学习"],
+  ["たたく","叩く","敲打，拍打","学习"],
+  ["となえる","唱える","吟诵，主张，宣扬","学习"],
+  ["つのる","募る","募集，征集，越发强烈","学习"],
+  ["ばける","化ける","化装，变成，伪装","学习"],
+  ["まさる","勝る","胜过，优于","学习"],
+  ["わりこむ","割り込む","插入，插队，打断","学习"],
+  ["とがめる","咎める","责备，指责","学习"],
+  ["そる","反る","弯曲，翘曲","学习"],
+  ["いたわる","労わる","慰劳，关怀","学习"],
+  ["こなす","","完成，处理，熟练掌握","复习"],
+  ["もつれる","","纠缠不清，纠结","复习"],
+  ["ごまかす","","欺骗，隐瞒，搪塞","复习"],
+  ["とろける","","融化，溶解","复习"],
+  ["くすぐる","","使发痒，使发笑","复习"],
+  ["かもしだす","かもし出す","营造出，创造出","复习"],
+  ["もがく","","挣扎，挣脱","复习"],
+  ["もぎとる","もぎ取る","摘取，强夺","复习"],
+  ["のりだす","乗り出す","探出，开始，着手","复习"],
+  ["したてる","仕立てる","裁剪，缝制，制作","复习"],
+  ["しのぶ","偲ぶ","追忆，怀念","复习"],
+  ["かきみだす","かき乱す","搅乱，扰乱，弄乱","复习"],
+  ["めんじる","免じる","免除，免去，宽恕","复习"],
+  ["つきそう","付き添う","陪伴，陪同","复习"],
+  ["しくむ","仕組む","策划，安排，设计","复习"],
+  ["でまわる","出回る","上市，流通，供应","复习"],
+  ["きりひらく","切り開く","开辟，开拓，创造","复习"],
+  ["そそる","","激发，引起兴趣，挑逗","复习"],
+  ["きりぬける","切り抜ける","摆脱，克服，渡过难关","复习"],
+  ["つきまとう","付き纏う","纠缠，追随","复习"],
+  ["まるめる","丸める","弄圆，弄平，弄弯","复习"],
+  ["まじわる","交わる","交叉，相交，交往","复习"],
+  ["あおぐ","仰ぐ","仰望，尊敬，请求","复习"],
+  ["ふせる","伏せる","趴下，隐瞒","复习"],
+  ["おかす","冒す","冒犯，冒险，侵占","复习"],
+  ["あまる","余る","剩余，过剩","复习"],
+  ["ばらす","","拆开，揭露","复习"],
+  ["ばてる","","疲惫，疲劳，累","复习"],
+  ["そなえつける","備え付ける","安装，配备","复习"],
+  ["みだす","乱す","扰乱，打乱，破坏","复习"],
+  ["しきる","仕切る","掌管，主持，分隔","复习"],
+  ["まかす","任す","委托，交给","复习"],
+  ["ぼやける","","模糊，朦胧","复习"],
+  ["でくわす","出くわす","偶遇，碰见","复习"],
+  ["ばれる","","暴露，泄露，被人发现","复习"],
+  ["はげる","剥げる","剥落，脱落","复习"],
+  ["はぐ","剥ぐ","剥掉，剥夺","复习"],
+  ["つかいこなす","使いこなす","熟练掌握，运用自如","复习"],
+  ["あざわらう","あざ笑う","嘲笑，讥笑","复习"],
+  ["かわす","交わす","相互进行某动作或回应","复习"],
+  ["しくじる","","失败，搞砸，弄错","复习"],
+  ["ひやかす","冷やかす","嘲弄，取笑，开玩笑","复习"],
+  ["しのぐ","凌ぐ","忍耐，超过，克服","复习"],
+  ["にかよう","似通う","相似，类似","复习"],
+  ["こらす","凝らす","集中，凝聚","复习"],
+  ["ぼやく","","抱怨，嘟囔","复习"],
+];
+
+const STORAGE_KEY = "n1_verb_list_v1";
+
+// ─── STATE ───
+let verbs = [];
+let currentFilter = "all";
+let currentSearch = "";
+let addOpen = false;
+let bulkMode = false;
+
+function loadVerbs() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) { verbs = JSON.parse(saved); return; }
+  } catch {}
+  verbs = INITIAL.map((v, i) => ({
+    id: "i" + i,
+    kana: v[0], kanji: v[1], meaning: v[2], tag: v[3]
+  }));
+  saveVerbs();
+}
+
+function saveVerbs() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(verbs)); } catch {}
+}
+
+// ─── RENDER ───
+function getTags() {
+  const s = new Set();
+  verbs.forEach(v => s.add(v.tag));
+  return [...s];
+}
+
+function getFiltered() {
+  return verbs.filter(v => {
+    if (currentFilter !== "all" && v.tag !== currentFilter) return false;
+    if (currentSearch) {
+      const s = currentSearch.toLowerCase();
+      return v.kana.includes(s) || v.kanji.includes(s) || v.meaning.includes(s);
+    }
+    return true;
+  });
+}
+
+function render() {
+  const filtered = getFiltered();
+  const tags = getTags();
+
+  // Counter
+  document.getElementById("counter").textContent =
+    `共 ${verbs.length} 词 · 筛选后 ${filtered.length} 词`;
+
+  // Tags
+  const tc = document.getElementById("tagContainer");
+  tc.innerHTML = "";
+  const allBtn = document.createElement("button");
+  allBtn.className = "tag-btn" + (currentFilter === "all" ? " active" : "");
+  allBtn.textContent = "全部";
+  allBtn.onclick = () => { currentFilter = "all"; render(); };
+  tc.appendChild(allBtn);
+  tags.forEach(t => {
+    const btn = document.createElement("button");
+    btn.className = "tag-btn" + (currentFilter === t ? " active" : "");
+    btn.textContent = t + " (" + verbs.filter(v => v.tag === t).length + ")";
+    btn.onclick = () => { currentFilter = t; render(); };
+    tc.appendChild(btn);
+  });
+
+  // Table
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+  filtered.forEach((v, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="td-num">${i + 1}</td>
+      <td class="td-kana">${esc(v.kana)}</td>
+      <td class="td-kanji ${v.kanji ? '' : 'empty'}">${v.kanji ? esc(v.kanji) : '—'}</td>
+      <td class="td-meaning">${esc(v.meaning)}</td>
+      <td><button class="del-btn" title="删除">×</button></td>
+    `;
+    tr.querySelector(".del-btn").onclick = () => {
+      verbs = verbs.filter(x => x.id !== v.id);
+      saveVerbs();
+      showToast("已删除");
+      render();
+    };
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("emptyMsg").classList.toggle("hidden", filtered.length > 0);
+}
+
+function esc(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ─── TOAST ───
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+// ─── INIT ───
+document.addEventListener("DOMContentLoaded", () => {
+  loadVerbs();
+  render();
+
+  // Search
+  document.getElementById("searchInput").addEventListener("input", e => {
+    currentSearch = e.target.value;
+    render();
+  });
+
+  // Add toggle
+  document.getElementById("addToggle").addEventListener("click", () => {
+    addOpen = !addOpen;
+    document.getElementById("addToggle").textContent = addOpen ? "▾ 收起" : "＋ 添加新单词";
+    document.getElementById("modeSwitch").classList.toggle("hidden", !addOpen);
+    updateFormVisibility();
+  });
+
+  // Mode switch
+  document.getElementById("modeSingle").addEventListener("click", () => {
+    bulkMode = false;
+    document.getElementById("modeSingle").classList.add("active");
+    document.getElementById("modeBulk").classList.remove("active");
+    updateFormVisibility();
+  });
+  document.getElementById("modeBulk").addEventListener("click", () => {
+    bulkMode = true;
+    document.getElementById("modeBulk").classList.add("active");
+    document.getElementById("modeSingle").classList.remove("active");
+    updateFormVisibility();
+  });
+
+  // Add single
+  document.getElementById("addOneBtn").addEventListener("click", () => {
+    const kana = document.getElementById("newKana").value.trim();
+    if (!kana) return;
+    verbs.push({
+      id: "u" + Date.now(),
+      kana,
+      kanji: document.getElementById("newKanji").value.trim(),
+      meaning: document.getElementById("newMeaning").value.trim(),
+      tag: document.getElementById("newTag").value.trim() || "学习",
+    });
+    saveVerbs();
+    document.getElementById("newKana").value = "";
+    document.getElementById("newKanji").value = "";
+    document.getElementById("newMeaning").value = "";
+    showToast("已添加：" + kana);
+    render();
+  });
+
+  // Add bulk
+  document.getElementById("addBulkBtn").addEventListener("click", () => {
+    const text = document.getElementById("bulkText").value.trim();
+    if (!text) return;
+    const tag = document.getElementById("bulkTag").value.trim() || "学习";
+    const lines = text.split("\n").filter(l => l.trim());
+    let count = 0;
+    lines.forEach(line => {
+      const parts = line.split(/[,，\t]/).map(s => s.trim());
+      if (parts[0]) {
+        verbs.push({
+          id: "u" + Date.now() + Math.random(),
+          kana: parts[0],
+          kanji: parts[1] || "",
+          meaning: parts[2] || "",
+          tag,
+        });
+        count++;
+      }
+    });
+    saveVerbs();
+    document.getElementById("bulkText").value = "";
+    showToast(`已添加 ${count} 个单词`);
+    render();
+  });
+
+  // Reset
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (!confirm("确定要重置为初始数据吗？所有自定义添加的单词将被删除。")) return;
+    verbs = INITIAL.map((v, i) => ({
+      id: "i" + i,
+      kana: v[0], kanji: v[1], meaning: v[2], tag: v[3]
+    }));
+    saveVerbs();
+    showToast("已重置");
+    render();
+  });
+});
+
+function updateFormVisibility() {
+  document.getElementById("singleForm").classList.toggle("hidden", !addOpen || bulkMode);
+  document.getElementById("bulkForm").classList.toggle("hidden", !addOpen || !bulkMode);
+}
+</script>
+</body>
+</html>
